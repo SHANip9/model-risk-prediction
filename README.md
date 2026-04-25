@@ -143,7 +143,7 @@ pip install -r requirements.txt
 python -m src.risk_model.pipeline.weekly_job --generate-sample-if-missing
 
 # Start API server
-export WEATHER_API_KEY="your_weatherapi_key"
+export WEATHER_API_KEY="5b6a61de919f4383bbe183403260804"
 uvicorn api.app:app --reload
 ```
 
