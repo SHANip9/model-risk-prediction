@@ -4,13 +4,13 @@
     "output_path": "F:\\OMNISIGHT AI\\Model Risk Prediction\\data\\features\\weekly_zone_features.csv",
     "metadata_path": "F:\\OMNISIGHT AI\\Model Risk Prediction\\data\\features\\weekly_zone_features_meta.json",
     "generate_sample_if_missing": true,
-    "sample_zone_count": 5,
+    "sample_zone_count": 20,
     "sample_weeks": 112
   },
-  "rows": 560,
-  "zones": 5,
+  "rows": 2240,
+  "zones": 20,
   "features": 16,
   "target_source": "historical_risk_score",
   "output_path": "F:\\OMNISIGHT AI\\Model Risk Prediction\\data\\features\\weekly_zone_features.csv",
-  "created_utc": "2026-04-13T06:57:42.913465+00:00"
+  "created_utc": "2026-04-25T20:02:37.752139+00:00"
 }

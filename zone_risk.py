@@ -1,12 +1,12 @@
 """
-OmniSight AI — Live Zone Risk Scoring
-======================================
+OmniSight AI — Live Zone Risk Scoring  (20 Zones · Pan-India)
+==============================================================
 Blends two sources:
   1. XGBoost baseline (55%) — from zone_risk_scores_latest.csv, produced
      by the weekly ML pipeline (src.risk_model.pipeline.weekly_job)
   2. Live weather (45%)     — WeatherAPI, same WEATHER_API_KEY as /route-risk
 
-Cache: 15-minute in-process cache so 5 WeatherAPI calls are not made
+Cache: 10-minute in-process cache so 20 WeatherAPI calls are not made
        on every frontend poll.
 
 File location: omnisight-backend/zone_risk.py
@@ -27,29 +27,50 @@ logger = logging.getLogger(__name__)
 _BACKEND_DIR = Path(__file__).resolve().parent
 _SCORES_CSV  = (
     _BACKEND_DIR
-    / "model-risk-prediction"
     / "data"
     / "processed"
     / "zone_risk_scores_latest.csv"
 )
 
 ZONES: list[dict[str, Any]] = [
-    {"id": "zone_1", "display_name": "Dharavi",      "city": "Mumbai", "lat": 19.0422, "lon": 72.8553},
-    {"id": "zone_2", "display_name": "Kurla West",   "city": "Mumbai", "lat": 19.0728, "lon": 72.8826},
-    {"id": "zone_3", "display_name": "Andheri East", "city": "Mumbai", "lat": 19.1136, "lon": 72.8697},
-    {"id": "zone_4", "display_name": "Bandra Kurla", "city": "Mumbai", "lat": 19.0596, "lon": 72.8656},
-    {"id": "zone_5", "display_name": "Thane West",   "city": "Thane",  "lat": 19.1852, "lon": 72.9710},
+    # ── Mumbai (5 zones) ──
+    {"id": "zone_1",  "display_name": "Dharavi",         "city": "Mumbai",  "lat": 19.0422, "lon": 72.8553},
+    {"id": "zone_2",  "display_name": "Kurla West",      "city": "Mumbai",  "lat": 19.0728, "lon": 72.8826},
+    {"id": "zone_3",  "display_name": "Andheri East",    "city": "Mumbai",  "lat": 19.1136, "lon": 72.8697},
+    {"id": "zone_4",  "display_name": "Bandra Kurla",    "city": "Mumbai",  "lat": 19.0596, "lon": 72.8656},
+    {"id": "zone_5",  "display_name": "Thane West",      "city": "Mumbai",  "lat": 19.1852, "lon": 72.9710},
+    # ── Delhi (5 zones) ──
+    {"id": "zone_6",  "display_name": "Chandni Chowk",   "city": "Delhi",   "lat": 28.6506, "lon": 77.2300},
+    {"id": "zone_7",  "display_name": "Connaught Place",  "city": "Delhi",   "lat": 28.6315, "lon": 77.2167},
+    {"id": "zone_8",  "display_name": "Lajpat Nagar",    "city": "Delhi",   "lat": 28.5700, "lon": 77.2400},
+    {"id": "zone_9",  "display_name": "Dwarka",          "city": "Delhi",   "lat": 28.5921, "lon": 77.0460},
+    {"id": "zone_10", "display_name": "Rohini",          "city": "Delhi",   "lat": 28.7495, "lon": 77.0565},
+    # ── Kolkata (5 zones) ──
+    {"id": "zone_11", "display_name": "Salt Lake",       "city": "Kolkata", "lat": 22.5800, "lon": 88.4150},
+    {"id": "zone_12", "display_name": "Howrah",          "city": "Kolkata", "lat": 22.5958, "lon": 88.2636},
+    {"id": "zone_13", "display_name": "Park Street",     "city": "Kolkata", "lat": 22.5510, "lon": 88.3530},
+    {"id": "zone_14", "display_name": "Jadavpur",        "city": "Kolkata", "lat": 22.4990, "lon": 88.3710},
+    {"id": "zone_15", "display_name": "Dum Dum",         "city": "Kolkata", "lat": 22.6352, "lon": 88.4230},
+    # ── Chennai (5 zones) ──
+    {"id": "zone_16", "display_name": "T. Nagar",        "city": "Chennai", "lat": 13.0418, "lon": 80.2341},
+    {"id": "zone_17", "display_name": "Adyar",           "city": "Chennai", "lat": 13.0067, "lon": 80.2572},
+    {"id": "zone_18", "display_name": "Anna Nagar",      "city": "Chennai", "lat": 13.0850, "lon": 80.2100},
+    {"id": "zone_19", "display_name": "Velachery",       "city": "Chennai", "lat": 12.9815, "lon": 80.2180},
+    {"id": "zone_20", "display_name": "Tambaram",        "city": "Chennai", "lat": 12.9249, "lon": 80.1000},
 ]
 
 _GEO_FALLBACK: dict[str, float] = {
-    "zone_1": 62.0,
-    "zone_2": 55.0,
-    "zone_3": 38.0,
-    "zone_4": 58.0,
-    "zone_5": 34.0,
+    # Mumbai
+    "zone_1":  62.0, "zone_2":  55.0, "zone_3":  38.0, "zone_4":  58.0, "zone_5":  34.0,
+    # Delhi
+    "zone_6":  72.0, "zone_7":  55.0, "zone_8":  60.0, "zone_9":  45.0, "zone_10": 50.0,
+    # Kolkata
+    "zone_11": 68.0, "zone_12": 78.0, "zone_13": 50.0, "zone_14": 58.0, "zone_15": 62.0,
+    # Chennai
+    "zone_16": 58.0, "zone_17": 70.0, "zone_18": 48.0, "zone_19": 65.0, "zone_20": 40.0,
 }
 
-_CACHE_TTL = 15 * 60
+_CACHE_TTL = 10 * 60  # 10 minutes
 _cache: dict[str, Any] = {"data": None, "ts": 0.0}
 
 
@@ -141,7 +162,7 @@ def _risk_color(s: float) -> str:
 
 def get_live_zone_scores() -> list[dict[str, Any]]:
     """
-    Returns live blended scores for all 5 zones, cached 15 min.
+    Returns live blended scores for all 20 zones, cached 10 min.
     Blend: XGBoost baseline 55% + live WeatherAPI 45%
     """
     now = time.time()
@@ -157,7 +178,7 @@ def get_live_zone_scores() -> list[dict[str, Any]]:
         wf  = _parse_weather(raw) if raw else _FALLBACK_WEATHER.copy()
         src = "live" if raw else "fallback"
 
-        baseline = baselines.get(zone["id"], _GEO_FALLBACK[zone["id"]])
+        baseline = baselines.get(zone["id"], _GEO_FALLBACK.get(zone["id"], 50.0))
         w_score  = _weather_score(wf)
         final    = round(float(np.clip(baseline * 0.55 + w_score * 0.45, 0.0, 100.0)), 2)
 
@@ -190,10 +211,10 @@ def get_heatmap_payload() -> dict[str, Any]:
     """Slim payload for the heatmap iframe and frontend map components."""
     zones = get_live_zone_scores()
     return {
-        "center":              [19.0760, 72.8777],
-        "radius_km":           25,
+        "center":              [22.5, 80.0],  # India center
+        "radius_km":           1500,
         "next_refresh_ms":     int((_cache["ts"] + _CACHE_TTL) * 1000),
-        "update_interval_min": 15,
+        "update_interval_min": 10,
         "zones": [
             {
                 "id":           z["zone_id"],

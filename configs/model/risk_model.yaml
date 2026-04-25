@@ -5,3 +5,14 @@ model:
   target: risk_score_0_100
   schedule_ist: "Sunday 23:00"
   explainability: shap
+  zone_count: 20
+  cities:
+    - Mumbai
+    - Delhi
+    - Kolkata
+    - Chennai
+  zones_per_city: 5
+  live_weather:
+    provider: weatherapi.com
+    blend_weight: 0.45
+    cache_ttl_min: 10

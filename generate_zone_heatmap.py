@@ -9,9 +9,9 @@ Changes from the original generate_zone_heatmap.py
    of reading zone_risk_heatmap_latest.csv
 2. Falls back to static CSV if the API is unreachable (local/CI usage)
 3. Injects a <script> block into the output HTML so the page
-   auto-refreshes its data every 15 minutes without a full page reload —
-   this means the iframe in AdminDashboard / ClientDashboard always
-   shows current risk without touching the React components
+    auto-refreshes its data every 10 minutes without a full page reload —
+    this means the iframe in AdminDashboard / ClientDashboard always
+    shows current risk without touching the React components
 
 Run locally
 -----------
@@ -36,6 +36,12 @@ import sys
 from math import asin, cos, radians, sin, sqrt
 from pathlib import Path
 
+# Fix Windows console encoding (cp1252 can't render emoji)
+if sys.stdout and hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if sys.stderr and hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 import requests
 
 try:
@@ -51,11 +57,9 @@ except ImportError:
 # ---------------------------------------------------------------------------
 
 ROOT        = Path(__file__).resolve().parent.parent
-OUTPUT_HTML = ROOT / "omnisight-frontend" / "public" / "heatmap.html"
+OUTPUT_HTML = ROOT / "OmniSight-AI" / "omnisight-frontend" / "public" / "heatmap.html"
 CSV_FALLBACK = (
-    ROOT
-    / "omnisight-backend"
-    / "model-risk-prediction"
+    Path(__file__).resolve().parent
     / "data"
     / "processed"
     / "zone_risk_heatmap_latest.csv"
@@ -67,17 +71,36 @@ CSV_FALLBACK = (
 
 API_BASE      = os.getenv("OMNISIGHT_API", "http://127.0.0.1:8000")
 HEATMAP_URL   = f"{API_BASE}/zones/risk/heatmap"
-USER_LAT      = 19.0760
-USER_LON      = 72.8777
-RADIUS_KM     = 25.0
+USER_LAT      = 22.5       # India center
+USER_LON      = 80.0
+RADIUS_KM     = 1500.0     # Pan-India coverage
 
 # Zone geo fallback (used when API AND csv are both unavailable)
 ZONE_GEO: dict[str, dict] = {
-    "zone_1": {"display_name": "Dharavi",      "city": "Mumbai", "latitude": 19.0422, "longitude": 72.8553},
-    "zone_2": {"display_name": "Kurla West",   "city": "Mumbai", "latitude": 19.0728, "longitude": 72.8826},
-    "zone_3": {"display_name": "Andheri East", "city": "Mumbai", "latitude": 19.1136, "longitude": 72.8697},
-    "zone_4": {"display_name": "Bandra Kurla", "city": "Mumbai", "latitude": 19.0596, "longitude": 72.8656},
-    "zone_5": {"display_name": "Thane West",   "city": "Thane",  "latitude": 19.1852, "longitude": 72.9710},
+    # ── Mumbai ──
+    "zone_1":  {"display_name": "Dharavi",         "city": "Mumbai",  "latitude": 19.0422, "longitude": 72.8553},
+    "zone_2":  {"display_name": "Kurla West",      "city": "Mumbai",  "latitude": 19.0728, "longitude": 72.8826},
+    "zone_3":  {"display_name": "Andheri East",    "city": "Mumbai",  "latitude": 19.1136, "longitude": 72.8697},
+    "zone_4":  {"display_name": "Bandra Kurla",    "city": "Mumbai",  "latitude": 19.0596, "longitude": 72.8656},
+    "zone_5":  {"display_name": "Thane West",      "city": "Mumbai",  "latitude": 19.1852, "longitude": 72.9710},
+    # ── Delhi ──
+    "zone_6":  {"display_name": "Chandni Chowk",   "city": "Delhi",   "latitude": 28.6506, "longitude": 77.2300},
+    "zone_7":  {"display_name": "Connaught Place",  "city": "Delhi",   "latitude": 28.6315, "longitude": 77.2167},
+    "zone_8":  {"display_name": "Lajpat Nagar",    "city": "Delhi",   "latitude": 28.5700, "longitude": 77.2400},
+    "zone_9":  {"display_name": "Dwarka",          "city": "Delhi",   "latitude": 28.5921, "longitude": 77.0460},
+    "zone_10": {"display_name": "Rohini",          "city": "Delhi",   "latitude": 28.7495, "longitude": 77.0565},
+    # ── Kolkata ──
+    "zone_11": {"display_name": "Salt Lake",       "city": "Kolkata", "latitude": 22.5800, "longitude": 88.4150},
+    "zone_12": {"display_name": "Howrah",          "city": "Kolkata", "latitude": 22.5958, "longitude": 88.2636},
+    "zone_13": {"display_name": "Park Street",     "city": "Kolkata", "latitude": 22.5510, "longitude": 88.3530},
+    "zone_14": {"display_name": "Jadavpur",        "city": "Kolkata", "latitude": 22.4990, "longitude": 88.3710},
+    "zone_15": {"display_name": "Dum Dum",         "city": "Kolkata", "latitude": 22.6352, "longitude": 88.4230},
+    # ── Chennai ──
+    "zone_16": {"display_name": "T. Nagar",        "city": "Chennai", "latitude": 13.0418, "longitude": 80.2341},
+    "zone_17": {"display_name": "Adyar",           "city": "Chennai", "latitude": 13.0067, "longitude": 80.2572},
+    "zone_18": {"display_name": "Anna Nagar",      "city": "Chennai", "latitude": 13.0850, "longitude": 80.2100},
+    "zone_19": {"display_name": "Velachery",       "city": "Chennai", "latitude": 12.9815, "longitude": 80.2180},
+    "zone_20": {"display_name": "Tambaram",        "city": "Chennai", "latitude": 12.9249, "longitude": 80.1000},
 }
 
 # ---------------------------------------------------------------------------
@@ -160,8 +183,14 @@ def load_hardcoded_fallback() -> list[dict]:
     """Last resort — hardcoded representative scores."""
     print("[OmniSight] ⚠️  Using hardcoded fallback data")
     fallback_scores = {
-        "zone_1": 72.0, "zone_2": 65.0,
-        "zone_3": 41.0, "zone_4": 68.0, "zone_5": 38.0,
+        # Mumbai
+        "zone_1":  72.0, "zone_2":  65.0, "zone_3":  41.0, "zone_4":  68.0, "zone_5":  38.0,
+        # Delhi
+        "zone_6":  72.0, "zone_7":  55.0, "zone_8":  60.0, "zone_9":  45.0, "zone_10": 50.0,
+        # Kolkata
+        "zone_11": 68.0, "zone_12": 78.0, "zone_13": 50.0, "zone_14": 58.0, "zone_15": 62.0,
+        # Chennai
+        "zone_16": 58.0, "zone_17": 70.0, "zone_18": 48.0, "zone_19": 65.0, "zone_20": 40.0,
     }
     zones = []
     for zid, geo in ZONE_GEO.items():
@@ -188,7 +217,7 @@ def load_zones() -> list[dict]:
 
 # ---------------------------------------------------------------------------
 # Self-refresh JavaScript
-# Injected into the HTML so the iframe auto-updates every 15 minutes.
+# Injected into the HTML so the iframe auto-updates every 10 minutes.
 # Calls GET /zones/risk/heatmap, then updates marker colors + popups.
 # ---------------------------------------------------------------------------
 
@@ -196,7 +225,7 @@ SELF_REFRESH_JS = f"""
 <script>
 (function () {{
   const API_BASE       = "{API_BASE}";
-  const REFRESH_MS     = 15 * 60 * 1000;   // 15 minutes
+  const REFRESH_MS     = 10 * 60 * 1000;   // 10 minutes
   const HEATMAP_ENDPOINT = API_BASE + "/zones/risk/heatmap";
 
   function labelFromScore(score) {{
@@ -272,7 +301,7 @@ SELF_REFRESH_JS = f"""
         const tip = layer.getTooltip();
         if (!tip) return;
         const text = tip._content || "";
-        const match = text.match(/zone_\\d/i);
+        const match = text.match(/zone_\\d+/i);
         if (match) {{
           const zid = match[0].toLowerCase();
           if (!markerMap[zid]) markerMap[zid] = {{}};
@@ -284,7 +313,7 @@ SELF_REFRESH_JS = f"""
   }});
 
   setInterval(refreshScores, REFRESH_MS);
-  console.log("[OmniSight] Self-refresh armed — updating every 15 min from", HEATMAP_ENDPOINT);
+  console.log("[OmniSight] Self-refresh armed — updating every 10 min from", HEATMAP_ENDPOINT);
 }})();
 </script>
 """
@@ -307,7 +336,7 @@ def build_map(zones: list[dict]) -> "folium.Map":
     uc = [USER_LAT, USER_LON]
     m = folium.Map(
         location=uc,
-        zoom_start=12,
+        zoom_start=5,
         tiles="cartodbpositron",
         control_scale=True,
     )
@@ -454,7 +483,7 @@ def build_map(zones: list[dict]) -> "folium.Map":
         'font-family:Inter,sans-serif;font-size:11px;min-width:210px;'
         'border:1px solid rgba(255,255,255,0.1)">'
         '<div style="font-size:13px;font-weight:800;margin-bottom:6px">🛵 OmniSight AI</div>'
-        '<div style="color:#6b7280;font-size:10px;margin-bottom:8px">Live · Updates every 15 min</div>'
+        '<div style="color:#6b7280;font-size:10px;margin-bottom:8px">Live · Updates every 10 min · 20 Pan-India Zones</div>'
         '<div style="margin:3px 0"><span style="background:#dc2626;color:#fff;'
         'padding:1px 8px;border-radius:20px;font-weight:700;font-size:10px">DANGER</span> ≥75</div>'
         '<div style="margin:3px 0"><span style="background:#f59e0b;color:#fff;'
@@ -492,7 +521,7 @@ def main() -> None:
     m.save(str(OUTPUT_HTML))
 
     print(f"[OmniSight] ✅ Heatmap saved → {OUTPUT_HTML}")
-    print(f"[OmniSight]    Self-refresh JS injected — iframe will poll {HEATMAP_URL} every 15 min")
+    print(f"[OmniSight]    Self-refresh JS injected — iframe will poll {HEATMAP_URL} every 10 min")
 
     # Print score summary
     print("\n  Zone Risk Summary:")

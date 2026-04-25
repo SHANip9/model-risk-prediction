@@ -14,13 +14,13 @@
     </style>
 </head>
 <body>
-    <h1>Gig Worker Risk Heatmap (Mumbai/Thane - 5 Zones)</h1>
-    <p>Click map for risk at location. Colors: <span style="color:green">Low</span> <60, <span style="color:orange">Medium</span> 60-80, <span style="color:red">High</span> >80.</p>
+    <h1>Gig Worker Risk Heatmap (20 Pan-India Zones)</h1>
+    <p>Mumbai · Delhi · Kolkata · Chennai — 5 zones each. Colors: <span style="color:#16a34a">SAFE</span> &lt;50, <span style="color:#f59e0b">CAUTION</span> 50-74, <span style="color:#dc2626">DANGER</span> &ge;75.</p>
     <div id="map"></div>
 
     <script>
-        const API_BASE = 'http://localhost:8000/risk';  // uvicorn api.app:app --reload
-        const map = L.map('map').setView([19.0761, 72.8777], 11);
+        const API_BASE = 'http://localhost:8000';  // uvicorn api.app:app --reload
+        const map = L.map('map').setView([22.5, 80.0], 5);  // India center
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -29,30 +29,36 @@
         const legend = L.control({position: 'bottomright'});
         legend.onAdd = function() {
             const div = L.DomUtil.create('div', 'info legend');
-            div.innerHTML = '<i style="background:#00ff00"></i> Low<br>' +
-                            '<i style="background:#ffff00"></i> Medium<br>' +
-                            '<i style="background:#ff0000"></i> High';
+            div.innerHTML = '<i style="background:#16a34a"></i> SAFE (&lt;50)<br>' +
+                            '<i style="background:#f59e0b"></i> CAUTION (50-74)<br>' +
+                            '<i style="background:#dc2626"></i> DANGER (&ge;75)';
             return div;
         };
         legend.addTo(map);
 
-        // Fetch heatmap
-        fetch(`${API_BASE}/heatmap`)
+        // Fetch live heatmap data from the backend
+        fetch(`${API_BASE}/zones/risk/heatmap`)
             .then(r => r.json())
             .then(data => {
                 data.zones.forEach(zone => {
+                    const color = zone.color || (zone.risk_score >= 75 ? '#dc2626' : zone.risk_score >= 50 ? '#f59e0b' : '#16a34a');
                     L.circle(zone.center, {
-                        color: zone.color,
-                        fillColor: zone.color,
+                        color: color,
+                        fillColor: color,
                         fillOpacity: 0.7,
-                        radius: 1000  // 1km approx zone
-                    }).addTo(map).bindPopup(`<b>${zone.display_name}</b><br>Risk: ${zone.risk_score.toFixed(2)} (${zone.risk_rank.toUpperCase()})`);
+                        radius: 2000  // 2km approx zone
+                    }).addTo(map).bindPopup(
+                        `<b>${zone.display_name}</b> (${zone.city})<br>` +
+                        `Risk: ${zone.risk_score.toFixed(1)} (${zone.risk_label || zone.risk_bin.toUpperCase()})<br>` +
+                        `Condition: ${zone.condition}<br>` +
+                        `Rain: ${zone.precip_mm} mm | Wind: ${zone.wind_kph} kph`
+                    );
                 });
             });
 
-        // Click for risk
+        // Click for nearest zone risk
         map.on('click', e => {
-            fetch(`${API_BASE}/risk/${e.latlng.lat}/${e.latlng.lng}`)
+            fetch(`${API_BASE}/risk/risk/${e.latlng.lat}/${e.latlng.lng}`)
                 .then(r => r.json())
                 .then(data => {
                     L.popup().setLatLng(e.latlng).setContent(

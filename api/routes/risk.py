@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import math
 from typing import Any
 
 import pandas as pd
@@ -10,6 +12,8 @@ from src.common.config import DATA_DIR
 router = APIRouter()
 
 RISK_SCORES_PATH = DATA_DIR / "processed" / "zone_risk_scores_latest.csv"
+HEATMAP_PATH = DATA_DIR / "processed" / "zone_risk_heatmap_latest.csv"
+ZONES_PATH = DATA_DIR / "zones.json"
 
 
 def _load_scores() -> pd.DataFrame:
@@ -37,6 +41,46 @@ def _normalize_record(record: dict[str, Any]) -> dict[str, Any]:
     return normalized
 
 
+def _load_zones() -> dict[str, Any]:
+    if not ZONES_PATH.exists():
+        raise HTTPException(status_code=404, detail="Zone config not found.")
+
+    with ZONES_PATH.open("r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def _load_heatmap() -> pd.DataFrame:
+    if not HEATMAP_PATH.exists():
+        raise HTTPException(
+            status_code=404,
+            detail="Heatmap file not found. Run heatmap generation first.",
+        )
+
+    return pd.read_csv(HEATMAP_PATH)
+
+
+def _get_risk_rank(score: float) -> str:
+    if score >= 66:
+        return "high"
+    if score >= 33:
+        return "medium"
+    return "low"
+
+
+def _haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    radius_km = 6371.0
+    phi1 = math.radians(lat1)
+    phi2 = math.radians(lat2)
+    d_phi = math.radians(lat2 - lat1)
+    d_lambda = math.radians(lon2 - lon1)
+
+    a = (
+        math.sin(d_phi / 2) ** 2
+        + math.cos(phi1) * math.cos(phi2) * math.sin(d_lambda / 2) ** 2
+    )
+    return radius_km * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
 @router.get("/latest")
 def latest_scores(limit: int = Query(default=50, ge=1, le=500)) -> list[dict[str, Any]]:
     frame = _load_scores().sort_values("week_start", ascending=False).head(limit)
@@ -50,13 +94,17 @@ def get_heatmap():
     heatmap = _load_heatmap()
     result = []
     for z in zones:
-        zone_row = heatmap[heatmap['zone_id'] == z['id']].iloc[0]
+        matches = heatmap[heatmap['zone_id'] == z['id']]
+        if matches.empty:
+            continue
+        zone_row = matches.iloc[0]
         score = zone_row['risk_score_0_100']
         rank = _get_risk_rank(score)
         color = z['color_' + rank]
         result.append({
             'id': z['id'],
             'display_name': z['display_name'],
+            'city': z.get('city'),
             'center': z['center'],
             'risk_score': float(score),
             'risk_rank': rank,
@@ -76,7 +124,10 @@ def get_risk_at_location(lat: float, lon: float):
             min_dist = dist
             nearest_zone = z
     if nearest_zone:
-        zone_row = heatmap[heatmap['zone_id'] == nearest_zone['id']].iloc[0]
+        matches = heatmap[heatmap['zone_id'] == nearest_zone['id']]
+        if matches.empty:
+            raise HTTPException(status_code=404, detail="No score found for nearest zone")
+        zone_row = matches.iloc[0]
         score = zone_row['risk_score_0_100']
         rank = _get_risk_rank(score)
         return {

@@ -52,7 +52,7 @@ class FeatureBuildConfig:
     output_path: Path = DATA_DIR / "features" / "weekly_zone_features.csv"
     metadata_path: Path = DATA_DIR / "features" / "weekly_zone_features_meta.json"
     generate_sample_if_missing: bool = False
-    sample_zone_count: int = 5
+    sample_zone_count: int = 20
     sample_weeks: int = 112
 
 
@@ -254,7 +254,7 @@ def parse_args() -> FeatureBuildConfig:
     parser.add_argument("--output", default=str(DATA_DIR / "features" / "weekly_zone_features.csv"))
     parser.add_argument("--metadata", default=str(DATA_DIR / "features" / "weekly_zone_features_meta.json"))
     parser.add_argument("--generate-sample-if-missing", action="store_true")
-    parser.add_argument("--sample-zone-count", type=int, default=5)
+    parser.add_argument("--sample-zone-count", type=int, default=20)
     parser.add_argument("--sample-weeks", type=int, default=112)
     args = parser.parse_args()
 

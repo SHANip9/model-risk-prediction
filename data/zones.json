@@ -1,52 +1,247 @@
 {
-  "center_lat": 19.0761,
-  "center_lon": 72.8777,
-  "radius_km": 16,
+  "center_lat": 22.5,
+  "center_lon": 80.0,
+  "radius_km": 1500,
   "zones": [
     {
       "id": "zone_1",
       "display_name": "Dharavi",
       "city": "Mumbai",
-      "center": [19.0422, 72.8553],
-      "color_low": "#00ff00",
-      "color_medium": "#ffff00",
-      "color_high": "#ff0000"
+      "center": [
+        19.0422,
+        72.8553
+      ],
+      "color_low": "#16a34a",
+      "color_medium": "#f59e0b",
+      "color_high": "#dc2626"
     },
     {
       "id": "zone_2",
       "display_name": "Kurla West",
       "city": "Mumbai",
-      "center": [19.0728, 72.8826],
-      "color_low": "#00ff00",
-      "color_medium": "#ffff00",
-      "color_high": "#ff0000"
+      "center": [
+        19.0728,
+        72.8826
+      ],
+      "color_low": "#16a34a",
+      "color_medium": "#f59e0b",
+      "color_high": "#dc2626"
     },
     {
       "id": "zone_3",
       "display_name": "Andheri East",
       "city": "Mumbai",
-      "center": [19.1136, 72.8697],
-      "color_low": "#00ff00",
-      "color_medium": "#ffff00",
-      "color_high": "#ff0000"
+      "center": [
+        19.1136,
+        72.8697
+      ],
+      "color_low": "#16a34a",
+      "color_medium": "#f59e0b",
+      "color_high": "#dc2626"
     },
     {
       "id": "zone_4",
       "display_name": "Bandra Kurla",
       "city": "Mumbai",
-      "center": [19.0596, 72.8656],
-      "color_low": "#00ff00",
-      "color_medium": "#ffff00",
-      "color_high": "#ff0000"
+      "center": [
+        19.0596,
+        72.8656
+      ],
+      "color_low": "#16a34a",
+      "color_medium": "#f59e0b",
+      "color_high": "#dc2626"
     },
     {
       "id": "zone_5",
       "display_name": "Thane West",
-      "city": "Thane",
-      "center": [19.1852, 72.971],
-      "color_low": "#00ff00",
-      "color_medium": "#ffff00",
-      "color_high": "#ff0000"
+      "city": "Mumbai",
+      "center": [
+        19.1852,
+        72.9710
+      ],
+      "color_low": "#16a34a",
+      "color_medium": "#f59e0b",
+      "color_high": "#dc2626"
+    },
+    {
+      "id": "zone_6",
+      "display_name": "Chandni Chowk",
+      "city": "Delhi",
+      "center": [
+        28.6506,
+        77.2300
+      ],
+      "color_low": "#16a34a",
+      "color_medium": "#f59e0b",
+      "color_high": "#dc2626"
+    },
+    {
+      "id": "zone_7",
+      "display_name": "Connaught Place",
+      "city": "Delhi",
+      "center": [
+        28.6315,
+        77.2167
+      ],
+      "color_low": "#16a34a",
+      "color_medium": "#f59e0b",
+      "color_high": "#dc2626"
+    },
+    {
+      "id": "zone_8",
+      "display_name": "Lajpat Nagar",
+      "city": "Delhi",
+      "center": [
+        28.5700,
+        77.2400
+      ],
+      "color_low": "#16a34a",
+      "color_medium": "#f59e0b",
+      "color_high": "#dc2626"
+    },
+    {
+      "id": "zone_9",
+      "display_name": "Dwarka",
+      "city": "Delhi",
+      "center": [
+        28.5921,
+        77.0460
+      ],
+      "color_low": "#16a34a",
+      "color_medium": "#f59e0b",
+      "color_high": "#dc2626"
+    },
+    {
+      "id": "zone_10",
+      "display_name": "Rohini",
+      "city": "Delhi",
+      "center": [
+        28.7495,
+        77.0565
+      ],
+      "color_low": "#16a34a",
+      "color_medium": "#f59e0b",
+      "color_high": "#dc2626"
+    },
+    {
+      "id": "zone_11",
+      "display_name": "Salt Lake",
+      "city": "Kolkata",
+      "center": [
+        22.5800,
+        88.4150
+      ],
+      "color_low": "#16a34a",
+      "color_medium": "#f59e0b",
+      "color_high": "#dc2626"
+    },
+    {
+      "id": "zone_12",
+      "display_name": "Howrah",
+      "city": "Kolkata",
+      "center": [
+        22.5958,
+        88.2636
+      ],
+      "color_low": "#16a34a",
+      "color_medium": "#f59e0b",
+      "color_high": "#dc2626"
+    },
+    {
+      "id": "zone_13",
+      "display_name": "Park Street",
+      "city": "Kolkata",
+      "center": [
+        22.5510,
+        88.3530
+      ],
+      "color_low": "#16a34a",
+      "color_medium": "#f59e0b",
+      "color_high": "#dc2626"
+    },
+    {
+      "id": "zone_14",
+      "display_name": "Jadavpur",
+      "city": "Kolkata",
+      "center": [
+        22.4990,
+        88.3710
+      ],
+      "color_low": "#16a34a",
+      "color_medium": "#f59e0b",
+      "color_high": "#dc2626"
+    },
+    {
+      "id": "zone_15",
+      "display_name": "Dum Dum",
+      "city": "Kolkata",
+      "center": [
+        22.6352,
+        88.4230
+      ],
+      "color_low": "#16a34a",
+      "color_medium": "#f59e0b",
+      "color_high": "#dc2626"
+    },
+    {
+      "id": "zone_16",
+      "display_name": "T. Nagar",
+      "city": "Chennai",
+      "center": [
+        13.0418,
+        80.2341
+      ],
+      "color_low": "#16a34a",
+      "color_medium": "#f59e0b",
+      "color_high": "#dc2626"
+    },
+    {
+      "id": "zone_17",
+      "display_name": "Adyar",
+      "city": "Chennai",
+      "center": [
+        13.0067,
+        80.2572
+      ],
+      "color_low": "#16a34a",
+      "color_medium": "#f59e0b",
+      "color_high": "#dc2626"
+    },
+    {
+      "id": "zone_18",
+      "display_name": "Anna Nagar",
+      "city": "Chennai",
+      "center": [
+        13.0850,
+        80.2100
+      ],
+      "color_low": "#16a34a",
+      "color_medium": "#f59e0b",
+      "color_high": "#dc2626"
+    },
+    {
+      "id": "zone_19",
+      "display_name": "Velachery",
+      "city": "Chennai",
+      "center": [
+        12.9815,
+        80.2180
+      ],
+      "color_low": "#16a34a",
+      "color_medium": "#f59e0b",
+      "color_high": "#dc2626"
+    },
+    {
+      "id": "zone_20",
+      "display_name": "Tambaram",
+      "city": "Chennai",
+      "center": [
+        12.9249,
+        80.1000
+      ],
+      "color_low": "#16a34a",
+      "color_medium": "#f59e0b",
+      "color_high": "#dc2626"
     }
   ]
 }
