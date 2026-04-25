@@ -1,0 +1,7 @@
+model:
+  name: zone_risk_prediction
+  algorithm: xgboost
+  validation_model: lightgbm
+  target: risk_score_0_100
+  schedule_ist: "Sunday 23:00"
+  explainability: shap

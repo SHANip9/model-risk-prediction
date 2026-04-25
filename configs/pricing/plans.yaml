@@ -1,0 +1,43 @@
+plans:
+  basic:
+    display_name: Basic
+    pricing:
+      mode: dynamic_zone_based
+      base_price_weekly_inr: 53
+      note: "From INR 53 per week based on zone risk"
+    coverage:
+      events: [rain, flood]
+      zones_allowed: 1
+      compensation_cap_tier: standard
+    claims:
+      review_queue: standard
+      appeal_support: self_service
+      green_instant_payout: true
+
+  pro:
+    display_name: Pro
+    pricing:
+      mode: dynamic_zone_based
+      contact_sales: true
+    coverage:
+      events: [rain, flood, traffic, curfew, power_outage]
+      zones_allowed: 3
+      compensation_cap_tier: high
+    claims:
+      review_queue: priority
+      appeal_support: assisted
+      green_instant_payout: true
+
+  elite:
+    display_name: Elite
+    pricing:
+      mode: dynamic_zone_based
+      contact_sales: true
+    coverage:
+      events: [all_supported]
+      zones_allowed: unlimited
+      compensation_cap_tier: max
+    claims:
+      review_queue: fast_track
+      appeal_support: dedicated
+      green_instant_payout: true

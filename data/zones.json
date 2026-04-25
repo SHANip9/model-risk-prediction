@@ -1,0 +1,52 @@
+{
+  "center_lat": 19.0761,
+  "center_lon": 72.8777,
+  "radius_km": 16,
+  "zones": [
+    {
+      "id": "zone_1",
+      "display_name": "Dharavi",
+      "city": "Mumbai",
+      "center": [19.0422, 72.8553],
+      "color_low": "#00ff00",
+      "color_medium": "#ffff00",
+      "color_high": "#ff0000"
+    },
+    {
+      "id": "zone_2",
+      "display_name": "Kurla West",
+      "city": "Mumbai",
+      "center": [19.0728, 72.8826],
+      "color_low": "#00ff00",
+      "color_medium": "#ffff00",
+      "color_high": "#ff0000"
+    },
+    {
+      "id": "zone_3",
+      "display_name": "Andheri East",
+      "city": "Mumbai",
+      "center": [19.1136, 72.8697],
+      "color_low": "#00ff00",
+      "color_medium": "#ffff00",
+      "color_high": "#ff0000"
+    },
+    {
+      "id": "zone_4",
+      "display_name": "Bandra Kurla",
+      "city": "Mumbai",
+      "center": [19.0596, 72.8656],
+      "color_low": "#00ff00",
+      "color_medium": "#ffff00",
+      "color_high": "#ff0000"
+    },
+    {
+      "id": "zone_5",
+      "display_name": "Thane West",
+      "city": "Thane",
+      "center": [19.1852, 72.971],
+      "color_low": "#00ff00",
+      "color_medium": "#ffff00",
+      "color_high": "#ff0000"
+    }
+  ]
+}
